@@ -17,14 +17,20 @@ function App() {
 
   useEffect(() => {
     if (window.ethereum) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
-      setContract(contractInstance);
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = provider.getSigner();
+        const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+        setContract(contractInstance);
+      } catch {
+        toast.error('An error occurred while connecting to MetaMask.');
+      }
     } else {
       toast.error('Please install MetaMask!');
     }
   }, []);
+  
+  
 
   const connectWallet = async () => {
     if (!window.ethereum) {
