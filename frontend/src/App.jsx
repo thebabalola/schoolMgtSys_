@@ -5,142 +5,155 @@ import 'react-toastify/dist/ReactToastify.css';
 import abi from '../abi.json';
 import './App.css';
 
-const CONTRACT_ADDRESS = "0x15b1a0818a0b475d889A3FF01EF53Ef8349fD3Ac";
+const CONTRACT_ADDRESS = "0xaf23a66689e55f08B24271Ce2dB6c5522F666d05";
 
-function App() {
-  const [walletAddress, setWalletAddress] = useState(null);
-  const [students, setStudents] = useState([]);
-  const [studentId, setStudentId] = useState("");
-  const [studentName, setStudentName] = useState("");
-  const [studentAge, setStudentAge] = useState("");
+const App = () => {
+  const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
+  const [account, setAccount] = useState(null);
+  const [studentId, setStudentId] = useState('');
+  const [studentName, setStudentName] = useState('');
+  const [studentInfo, setStudentInfo] = useState('');
 
   useEffect(() => {
     if (window.ethereum) {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = provider.getSigner();
-        const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
-        setContract(contractInstance);
-      } catch {
-        toast.error('An error occurred while connecting to MetaMask.');
-      }
+      const tempProvider =  new ethers.BrowserProvider(window.ethereum);
+      setProvider(tempProvider);
     } else {
-      toast.error('Please install MetaMask!');
+      toast.error("Please install MetaMask!");
     }
   }, []);
-  
-  
 
   const connectWallet = async () => {
-    if (!window.ethereum) {
-      toast.error('Please install MetaMask!');
-      return;
-    }
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    setWalletAddress(accounts[0]);
-    toast.success(`Wallet connected: ${accounts[0]}`);
-  };
-
-  const getStudent = async () => {
-    if (!contract || !studentId) {
-      toast.error('Please enter a valid student ID!');
-      return;
-    }
     try {
-      const student = await contract.getStudent(studentId);
-      toast.success(`Student: ${student.name}, Age: ${student.age}`);
-    } catch {
-      toast.error('Error fetching student data');
-    }
-  };
-
-  const getAllStudents = async () => {
-    if (!contract) {
-      toast.error('Error connecting to contract');
-      return;
-    }
-    try {
-      const allStudents = await contract.getAllStudents();
-      setStudents(allStudents);
-      toast.success('Fetched all students');
-    } catch {
-      toast.error('Error fetching all students');
+      const accounts = await provider.send("eth_requestAccounts", []);
+      setAccount(accounts[0]);
+      const tempContract = new ethers.Contract(CONTRACT_ADDRESS, abi, provider.getSigner());
+      setContract(tempContract);
+      toast.success("Wallet connected successfully!");
+    } catch{
+      toast.error("Failed to connect wallet!");
     }
   };
 
   const registerStudent = async () => {
-    if (!contract || !studentName || !studentAge) {
-      toast.error('Please provide student name and age!');
+    if (!contract || !studentId || !studentName) {
+      toast.error("Please fill in all fields!");
       return;
     }
+
     try {
-      const tx = await contract.registerStudent(studentName, studentAge);
+      const tx = await contract.registerStudent(studentId, studentName);
       await tx.wait();
-      toast.success('Student registered successfully!');
-      setStudentName('');
-      setStudentAge('');
-    } catch{
-      toast.error('Error registering student');
+      toast.success("Student registered successfully!");
+    } catch {
+      toast.error("Failed to register student!");
+    }
+  };
+
+  const getStudent = async () => {
+    if (!contract || !studentId) {
+      toast.error("Please provide a student ID!");
+      return;
+    }
+
+    try {
+      const student = await contract.getStudent(studentId);
+      setStudentInfo(`Student Name: ${student.name}, ID: ${student.id}`);
+      toast.success("Student data retrieved successfully!");
+    } catch {
+      toast.error("Failed to retrieve student data!");
     }
   };
 
   return (
-    <div className="App">
-      <h1>Student Registration</h1>
+    <div style={styles.container}>
+      <h1 style={styles.heading}>Student Registration DApp</h1>
 
-      {!walletAddress ? (
-        <button onClick={connectWallet}>Connect Wallet</button>
+      {account ? (
+        <div>
+          <p>Connected as: {account}</p>
+        </div>
       ) : (
-        <div>Wallet Connected: {walletAddress}</div>
+        <button style={styles.button} onClick={connectWallet}>Connect Wallet</button>
       )}
 
-      <div className="actions">
-        <div>
-          <input
-            type="text"
-            placeholder="Enter Student ID"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-          />
-          <button onClick={getStudent}>Get Student</button>
-        </div>
-
-        <div>
-          <button onClick={getAllStudents}>Get All Students</button>
-        </div>
-
-        <div>
-          <input
-            type="text"
-            placeholder="Student Name"
-            value={studentName}
-            onChange={(e) => setStudentName(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Student Age"
-            value={studentAge}
-            onChange={(e) => setStudentAge(e.target.value)}
-          />
-          <button onClick={registerStudent}>Register Student</button>
-        </div>
+      <div style={styles.form}>
+        <input
+          type="text"
+          placeholder="Student ID"
+          value={studentId}
+          onChange={(e) => setStudentId(e.target.value)}
+          style={styles.input}
+        />
+        <input
+          type="text"
+          placeholder="Student Name"
+          value={studentName}
+          onChange={(e) => setStudentName(e.target.value)}
+          style={styles.input}
+        />
+        <button style={styles.button} onClick={registerStudent}>Register Student</button>
       </div>
 
-      <div className="students-list">
-        <h2>All Students</h2>
-        <ul>
-          {students.map((student, index) => (
-            <li key={index}>
-              <strong>ID:</strong> {student.id} | <strong>Name:</strong> {student.name} | <strong>Age:</strong> {student.age}
-            </li>
-          ))}
-        </ul>
+      <div style={styles.form}>
+        <input
+          type="text"
+          placeholder="Student ID to Get Info"
+          value={studentId}
+          onChange={(e) => setStudentId(e.target.value)}
+          style={styles.input}
+        />
+        <button style={styles.button} onClick={getStudent}>Get Student Info</button>
       </div>
+
+      {studentInfo && <div style={styles.infoBox}>{studentInfo}</div>}
 
       <ToastContainer />
     </div>
   );
-}
+};
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '20px',
+    fontFamily: 'Arial, sans-serif',
+  },
+  heading: {
+    fontSize: '2rem',
+    marginBottom: '20px',
+  },
+  button: {
+    backgroundColor: '#00985B',
+    color: 'white',
+    padding: '10px 20px',
+    margin: '10px',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+  },
+  input: {
+    padding: '10px',
+    margin: '10px',
+    width: '250px',
+    borderRadius: '5px',
+    border: '1px solid #ccc',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  infoBox: {
+    marginTop: '20px',
+    padding: '15px',
+    backgroundColor: '#f4f4f4',
+    border: '1px solid #ccc',
+    borderRadius: '5px',
+  }
+};
 
 export default App;

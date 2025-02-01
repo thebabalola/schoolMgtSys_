@@ -1,62 +1,55 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.18;
 
 contract SchoolMgtSys {
     address public admin;
     
     struct Student {
+        uint256 id;
         string name;
-        bool isRegistered;
+        bool registered;
     }
     
     mapping(uint256 => Student) public students;
-    uint256[] public studentIds;
-    
-    event StudentRegistered(uint256 indexed studentId, string name);
-    event StudentRemoved(uint256 indexed studentId);
-    
+    uint256 public nextStudentId = 1;
+
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin can perform this action");
         _;
     }
-    
+
     constructor() {
         admin = msg.sender;
     }
-    
-    function registerStudent(uint256 _studentId, string memory _name) public onlyAdmin {
-        require(!students[_studentId].isRegistered, "Student ID already exists");
-        require(bytes(_name).length > 0, "Name cannot be empty");
-        
-        students[_studentId] = Student(_name, true);
-        studentIds.push(_studentId);
-        
-        emit StudentRegistered(_studentId, _name);
+
+    function registerStudent(string memory name) public onlyAdmin {
+        uint256 studentId = nextStudentId;
+        students[studentId] = Student(studentId, name, true);
+        nextStudentId++;
     }
-    
-    function removeStudent(uint256 _studentId) public onlyAdmin {
-        require(students[_studentId].isRegistered, "Student does not exist");
-        
-        students[_studentId].isRegistered = false;
-        
-        // Remove from studentIds array
-        for (uint i = 0; i < studentIds.length; i++) {
-            if (studentIds[i] == _studentId) {
-                studentIds[i] = studentIds[studentIds.length - 1];
-                studentIds.pop();
-                break;
+
+    function removeStudent(uint256 studentId) public onlyAdmin {
+        require(students[studentId].registered, "Student not found");
+        students[studentId].registered = false;
+    }
+
+    function getStudent(uint256 studentId) public view returns (uint256, string memory) {
+        require(students[studentId].registered, "Student not found");
+        Student memory student = students[studentId];
+        return (student.id, student.name);
+    }
+
+    function getAllStudents() public view returns (uint256[] memory) {
+        uint256[] memory studentIds = new uint256[](nextStudentId - 1);
+        uint256 index = 0;
+
+        for (uint256 i = 1; i < nextStudentId; i++) {
+            if (students[i].registered) {
+                studentIds[index] = i;
+                index++;
             }
         }
         
-        emit StudentRemoved(_studentId);
-    }
-    
-    function getStudent(uint256 _studentId) public view returns (string memory name, bool isRegistered) {
-        Student memory student = students[_studentId];
-        return (student.name, student.isRegistered);
-    }
-    
-    function getAllStudentIds() public view returns (uint256[] memory) {
         return studentIds;
     }
 }

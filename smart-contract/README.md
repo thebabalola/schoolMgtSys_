@@ -2,7 +2,7 @@ A simple Ethereum-based school management system that allows for student registr
 
 ## Smart Contract Implementation
 
-Contract Address: 0x15b1a0818a0b475d889A3FF01EF53Ef8349fD3Ac
+Contract Address: 0xaf23a66689e55f08B24271Ce2dB6c5522F666d05
 
 The `SchoolMgtSys` contract implements a basic class registration system with the following key features:
 
