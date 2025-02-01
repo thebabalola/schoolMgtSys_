@@ -1,0 +1,51 @@
+.App {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: #00985B;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin: 10px;
+}
+
+button:hover {
+  background-color: #048853;
+}
+
+input {
+  padding: 10px;
+  margin: 5px 0;
+  width: calc(100% - 20px);
+  box-sizing: border-box;
+}
+
+.actions {
+  margin-bottom: 20px;
+}
+
+.students-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.students-list li {
+  background-color: #f4f4f4;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.students-list h2 {
+  text-align: center;
+}
