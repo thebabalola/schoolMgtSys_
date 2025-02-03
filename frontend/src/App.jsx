@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { ethers } from "ethers"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import abi from "../abi.json"
+import abi from "./abi.json"
 import "./App.css"
 
 const CONTRACT_ADDRESS = "0xaf23a66689e55f08B24271Ce2dB6c5522F666d05"
@@ -167,4 +167,3 @@ export default function App() {
     </div>
   )
 }
-
